@@ -6,6 +6,10 @@ import type { AccionFechaCompromisoCambio } from '@/services/accionFechaCompromi
 
 const ACTION_ID_CHUNK_SIZE = 100
 const EXPORT_PAGE_SIZE = 500
+const COMMENT_SELECT =
+  'id,accion_id,contenido,created_by,tipo_comentario,asignado,etiquetas,adjuntos,created_at'
+const COMMENT_SELECT_LEGACY =
+  'id,accion_id,contenido,created_by,asignado,etiquetas,adjuntos,created_at'
 
 export interface KanbanExportDetails {
   comentarios: AccionComentario[]
@@ -26,6 +30,18 @@ interface ExportPage<T> {
   data: T[] | null
   error: unknown
   count: number | null
+}
+
+function isMissingTipoComentarioError(error: unknown) {
+  const maybeError = error as { code?: string; message?: string } | null
+  return maybeError?.code === '42703' && maybeError.message?.includes('tipo_comentario')
+}
+
+function normalizeCommentRows(rows: unknown[] | null | undefined): AccionComentario[] {
+  return (rows ?? []).map((row) => ({
+    ...(row as Omit<AccionComentario, 'tipo_comentario'>),
+    tipo_comentario: (row as Partial<AccionComentario>).tipo_comentario ?? null,
+  }))
 }
 
 export async function loadAllExportRows<T>(
@@ -79,13 +95,24 @@ export const kanbanExportService = {
         return loadAllExportRows<AccionComentario>(async (from, to) => {
           const { data, error, count } = await supabase
             .from('accion_comentarios')
-            .select('id,accion_id,contenido,created_by,tipo_comentario,asignado,etiquetas,adjuntos,created_at', { count: 'exact' })
+            .select(COMMENT_SELECT, { count: 'exact' })
             .in('accion_id', ids)
             .order('accion_id', { ascending: true })
             .order('created_at', { ascending: true })
             .order('id', { ascending: true })
             .range(from, to)
-          return { data: (data ?? []) as AccionComentario[], error, count }
+          if (isMissingTipoComentarioError(error)) {
+            const { data: legacyData, error: legacyError, count: legacyCount } = await supabase
+              .from('accion_comentarios')
+              .select(COMMENT_SELECT_LEGACY, { count: 'exact' })
+              .in('accion_id', ids)
+              .order('accion_id', { ascending: true })
+              .order('created_at', { ascending: true })
+              .order('id', { ascending: true })
+              .range(from, to)
+            return { data: normalizeCommentRows(legacyData), error: legacyError, count: legacyCount }
+          }
+          return { data: normalizeCommentRows(data), error, count }
         })
       }),
       loadForActionChunks(uniqueIds, async (ids) => {

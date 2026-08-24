@@ -8,10 +8,24 @@ import type { AccionComentario, ComentarioAdjunto } from '@/types/accionComentar
 const TABLE = 'accion_comentarios'
 const COMENTARIO_SELECT =
   'id,accion_id,contenido,created_by,tipo_comentario,asignado,etiquetas,adjuntos,created_at'
+const COMENTARIO_SELECT_LEGACY =
+  'id,accion_id,contenido,created_by,asignado,etiquetas,adjuntos,created_at'
 const COMENTARIO_VISIBILITY_SELECT = 'accion_id,asignado,etiquetas'
 const BUCKET = 'evidencias'
 
 export type AccionComentarioVisibility = Pick<AccionComentario, 'accion_id' | 'asignado' | 'etiquetas'>
+
+function isMissingTipoComentarioError(error: unknown) {
+  const maybeError = error as { code?: string; message?: string } | null
+  return maybeError?.code === '42703' && maybeError.message?.includes('tipo_comentario')
+}
+
+function withDefaultCommentType(rows: unknown[] | null | undefined): AccionComentario[] {
+  return (rows ?? []).map((row) => ({
+    ...(row as Omit<AccionComentario, 'tipo_comentario'>),
+    tipo_comentario: (row as Partial<AccionComentario>).tipo_comentario ?? null,
+  }))
+}
 
 export const accionComentariosService = {
   /** Cuenta comentarios por cada accion_id. Útil para badges en cards. */
@@ -37,8 +51,17 @@ export const accionComentariosService = {
       .select(COMENTARIO_SELECT)
       .eq('accion_id', accionId)
       .order('created_at', { ascending: true })
+    if (isMissingTipoComentarioError(error)) {
+      const { data: legacyData, error: legacyError } = await supabase
+        .from(TABLE)
+        .select(COMENTARIO_SELECT_LEGACY)
+        .eq('accion_id', accionId)
+        .order('created_at', { ascending: true })
+      if (legacyError) throw legacyError
+      return withDefaultCommentType(legacyData)
+    }
     if (error) throw error
-    return (data ?? []) as AccionComentario[]
+    return withDefaultCommentType(data)
   },
 
   async listByAccionIds(accionIds: string[]): Promise<AccionComentario[]> {
@@ -48,8 +71,17 @@ export const accionComentariosService = {
       .select(COMENTARIO_SELECT)
       .in('accion_id', accionIds)
       .order('created_at', { ascending: false })
+    if (isMissingTipoComentarioError(error)) {
+      const { data: legacyData, error: legacyError } = await supabase
+        .from(TABLE)
+        .select(COMENTARIO_SELECT_LEGACY)
+        .in('accion_id', accionIds)
+        .order('created_at', { ascending: false })
+      if (legacyError) throw legacyError
+      return withDefaultCommentType(legacyData)
+    }
     if (error) throw error
-    return (data ?? []) as AccionComentario[]
+    return withDefaultCommentType(data)
   },
 
   async listVisibilityByAccionIds(accionIds: string[]): Promise<AccionComentarioVisibility[]> {
@@ -83,13 +115,23 @@ export const accionComentariosService = {
       adjuntos: input.adjuntos ?? [],
       created_at: now,
     }
+    const payload = { ...fallback }
     const { data, error } = await supabase
       .from(TABLE)
-      .insert({
-        ...fallback,
-      })
+      .insert(payload)
       .select(COMENTARIO_SELECT)
       .maybeSingle()
+    if (isMissingTipoComentarioError(error)) {
+      const legacyPayload: Omit<AccionComentario, 'tipo_comentario'> = { ...payload }
+      delete (legacyPayload as Partial<AccionComentario>).tipo_comentario
+      const { data: legacyData, error: legacyError } = await supabase
+        .from(TABLE)
+        .insert(legacyPayload)
+        .select(COMENTARIO_SELECT_LEGACY)
+        .maybeSingle()
+      if (legacyError) throw legacyError
+      return (withDefaultCommentType(legacyData ? [legacyData] : [fallback])[0] ?? fallback)
+    }
     if (error) throw error
     return (data ?? fallback) as AccionComentario
   },
@@ -104,6 +146,27 @@ export const accionComentariosService = {
       .eq('id', id)
       .select(COMENTARIO_SELECT)
       .maybeSingle()
+    if (isMissingTipoComentarioError(error)) {
+      const legacyPatch: Omit<typeof patch, 'tipo_comentario'> = { ...patch }
+      delete (legacyPatch as Partial<typeof patch>).tipo_comentario
+      if (Object.keys(legacyPatch).length === 0) {
+        const { data: currentData, error: currentError } = await supabase
+          .from(TABLE)
+          .select(COMENTARIO_SELECT_LEGACY)
+          .eq('id', id)
+          .maybeSingle()
+        if (currentError) throw currentError
+        return withDefaultCommentType(currentData ? [currentData] : [])[0]
+      }
+      const { data: legacyData, error: legacyError } = await supabase
+        .from(TABLE)
+        .update(legacyPatch)
+        .eq('id', id)
+        .select(COMENTARIO_SELECT_LEGACY)
+        .maybeSingle()
+      if (legacyError) throw legacyError
+      return withDefaultCommentType(legacyData ? [legacyData] : [])[0]
+    }
     if (error) throw error
     return data as AccionComentario
   },

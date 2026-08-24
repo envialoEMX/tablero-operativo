@@ -32,6 +32,13 @@ const router = createBrowserRouter([
     element: <ResetPasswordPage />,
   },
   {
+    path: '/producto',
+    lazy: async () => {
+      const { ProductLandingPage } = await import('@/pages/product/ProductLandingPage')
+      return { Component: ProductLandingPage }
+    },
+  },
+  {
     path: '/',
     element: <ProtectedRoute />,
     hydrateFallbackElement: <PageLoadingFallback />,
@@ -117,6 +124,27 @@ const router = createBrowserRouter([
             lazy: async () => {
               const { TicketsPage } = await importWithReload(() => import('@/features/tickets'))
               return { Component: TicketsPage }
+            },
+          },
+          {
+            path: ROUTES.CHALLENGES,
+            lazy: async () => {
+              const { ChallengesPage } = await importWithReload(() => import('@/features/challenges'))
+              return { Component: ChallengesPage }
+            },
+          },
+          {
+            path: ROUTES.CHALLENGES_DETAIL,
+            lazy: async () => {
+              const { ChallengeDetailPage } = await importWithReload(() => import('@/features/challenges'))
+              return { Component: ChallengeDetailPage }
+            },
+          },
+          {
+            path: ROUTES.ADMIN_CHALLENGES,
+            lazy: async () => {
+              const { ChallengesAdminPage } = await importWithReload(() => import('@/features/challenges'))
+              return { Component: ChallengesAdminPage }
             },
           },
           {

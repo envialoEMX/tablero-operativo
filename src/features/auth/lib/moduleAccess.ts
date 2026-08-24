@@ -21,6 +21,8 @@ const MODULE_ROUTES: Array<[string, string]> = [
   [ROUTES.DASHBOARD, 'dashboard'],
   [ROUTES.KANBAN, 'kanban'],
   [ROUTES.TICKETS, 'tickets'],
+  [ROUTES.ADMIN_CHALLENGES, 'challenges'],
+  [ROUTES.CHALLENGES, 'challenges'],
   [ROUTES.ORG_CHART, 'org_chart'],
   [ROUTES.DISCIPLINA, 'discipline'],
   [ROUTES.CALENDARIO, 'calendar'],
@@ -39,6 +41,7 @@ const MODULE_DEFAULT_ROUTES: Array<[string, string]> = [
   ['kanban', ROUTES.KANBAN],
   ['team_kanban', ROUTES.TEAM_KANBAN],
   ['tickets', ROUTES.TICKETS],
+  ['challenges', ROUTES.CHALLENGES],
   ['org_chart', ROUTES.ORG_CHART],
   ['discipline', ROUTES.DISCIPLINA],
   ['calendar', ROUTES.CALENDARIO],
@@ -86,6 +89,12 @@ export function canAccessRouteWithModules(
       moduleKeys?.includes('team_kanban') === true ||
       moduleKeys?.includes('team_dashboard') === true
     )
+  }
+
+  if (pathname === ROUTES.ADMIN_CHALLENGES || pathname.startsWith(`${ROUTES.ADMIN_CHALLENGES}/`)) {
+    if (!canAccessRouteByRole(rol, pathname, appRole)) return false
+    if (!moduleKeys) return true
+    return moduleKeys.includes('challenges')
   }
 
   if (isAnalystByRole(rol)) return canAccessRouteByRole(rol, pathname, appRole)

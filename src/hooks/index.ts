@@ -1,2 +1,5 @@
 // Hooks reutilizables
-// Añadir aquí: useDebounce, useLocalStorage, useMediaQuery, etc.
+export { useCountUp, useCountUpDecimal } from './useCountUp'
+export { useInView } from './useInView'
+export { useScrollSpy } from './useScrollSpy'
+
