@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { SECTION_SPACING, type SectionSpacing } from '@/lib/spacing'
 import { RevealSection } from './RevealSection'
+import { useDemoRequest } from './DemoRequestContext'
 import { StatusToken, type StatusColor } from './StatusToken'
 
+/** @deprecated Usar el formulario de demo integrado. */
 export const demoHref = 'mailto:demo@scrumban.mx?subject=Quiero%20conocer%20SCRUMBAN'
 
 /** Variantes de fondo: nunca dos secciones consecutivas iguales. */
@@ -237,11 +239,14 @@ export function PrimaryCTA({
   glow?: boolean
   className?: string
 }) {
+  const { openDemoRequest } = useDemoRequest()
+
   return (
     <Button
-      asChild
+      type="button"
       size="lg"
       variant={dark ? 'secondary' : 'default'}
+      onClick={openDemoRequest}
       className={cn(
         'h-11 min-h-11 gap-2 rounded-full px-6 text-sm font-semibold shadow-sm',
         dark && 'bg-background text-foreground hover:bg-background/90',
@@ -251,11 +256,35 @@ export function PrimaryCTA({
         className
       )}
     >
-      <a href={demoHref}>
-        {glow && !dark ? <Sparkles className="h-4 w-4" aria-hidden /> : null}
-        {children}
-        <ArrowRight className="h-4 w-4" />
-      </a>
+      {glow && !dark ? <Sparkles className="h-4 w-4" aria-hidden /> : null}
+      {children}
+      <ArrowRight className="h-4 w-4" />
+    </Button>
+  )
+}
+
+/** CTA secundario que abre el mismo formulario de demo. */
+export function DemoAdvisorCTA({
+  children = 'Hablar con un asesor',
+  className,
+}: {
+  children?: ReactNode
+  className?: string
+}) {
+  const { openDemoRequest } = useDemoRequest()
+
+  return (
+    <Button
+      type="button"
+      size="lg"
+      variant="outline"
+      onClick={openDemoRequest}
+      className={cn(
+        'h-11 min-h-11 rounded-full border-border/70 bg-background px-6 text-sm font-semibold',
+        className
+      )}
+    >
+      {children}
     </Button>
   )
 }

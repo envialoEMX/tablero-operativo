@@ -12,15 +12,14 @@ import { useInView } from '@/hooks/useInView'
 import { cn } from '@/lib/utils'
 import {
   CtaTrustRow,
+  DemoAdvisorCTA,
   Eyebrow,
   LandingCard,
   LandingSection,
   LandingShell,
   PrimaryCTA,
-  SecondaryCTA,
   SectionLead,
   SectionTitle,
-  demoHref,
 } from './ProductUI'
 import { CountUpInteger } from './CountUpValue'
 import { PremiumCtaPanel } from './ProductVisual'
@@ -417,12 +416,7 @@ export function CloseSection() {
             </SectionLead>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <PrimaryCTA dark glow className="bg-foreground text-background hover:bg-foreground/90" />
-              <SecondaryCTA
-                href={demoHref}
-                className="border-white/20 bg-white text-foreground hover:bg-white/90"
-              >
-                Hablar con un asesor
-              </SecondaryCTA>
+              <DemoAdvisorCTA className="border-white/20 bg-white text-foreground hover:bg-white/90" />
             </div>
             <CtaTrustRow
               dark
