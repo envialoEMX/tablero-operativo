@@ -16,6 +16,8 @@ import {
 } from './ProductUI'
 import { LandingGridPattern, LandingOrbitRings } from './ProductVisual'
 import { StatusToken, StatusTokenMark } from './StatusToken'
+import { LANDING_SEO } from './landingSeo'
+import { LandingSectionSeo } from './LandingSeoHead'
 
 const nav = [
   ['Producto', '#producto'],
@@ -214,6 +216,7 @@ export function ProductHero() {
           SECTION_SPACING.hero
         )}
       >
+        <LandingSectionSeo description={LANDING_SEO.sections.inicio.description} />
         <LandingGridPattern className="opacity-50" />
         <div
           className="pointer-events-none absolute right-6 top-24 hidden opacity-[0.12] lg:block"

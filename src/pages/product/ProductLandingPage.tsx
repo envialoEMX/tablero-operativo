@@ -1,5 +1,6 @@
 import { AIDemo, DashboardDemo, ProductInAction } from './ProductDemos'
 import { DemoRequestProvider } from './DemoRequestContext'
+import { LandingSeoHead } from './LandingSeoHead'
 import { CloseSection, CultureShiftSection, MidPageCTA, MoreCapabilitiesSection, ProblemSection } from './ProductSections'
 import { ProductHero } from './ProductHero'
 import { LandingShell, Logo } from './ProductUI'
@@ -7,6 +8,7 @@ import { LandingShell, Logo } from './ProductUI'
 export function ProductLandingPage() {
   return (
     <DemoRequestProvider>
+      <LandingSeoHead />
       <div className="min-h-screen bg-background font-sans text-foreground selection:bg-primary/20">
         <ProductHero />
         <main className="overflow-x-hidden">

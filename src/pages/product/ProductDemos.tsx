@@ -67,6 +67,7 @@ import {
   SectionTitle,
 } from './ProductUI'
 import { ModuleMetaBadge, StatusPill } from './ProductVisual'
+import { LANDING_SEO } from './landingSeo'
 
 const owners = ['Ana Martínez', 'Juan Reyes', 'Laura Cruz'] as const
 const priorities = [
@@ -1080,7 +1081,13 @@ export function ProductInAction() {
   }
 
   return (
-    <LandingSection id="como-funciona" surface="depth" spacing="standard" withGrid>
+    <LandingSection
+      id="como-funciona"
+      surface="depth"
+      spacing="standard"
+      withGrid
+      seoDescription={LANDING_SEO.sections.producto.description}
+    >
       <LandingShell>
         <div className="mx-auto max-w-2xl text-center">
           <Eyebrow tokenColor="blue">Producto en acción</Eyebrow>
@@ -1200,7 +1207,12 @@ export function DashboardDemo() {
   }
 
   return (
-    <LandingSection id="indicadores" surface="inverse" spacing="standard">
+    <LandingSection
+      id="indicadores"
+      surface="inverse"
+      spacing="standard"
+      seoDescription={LANDING_SEO.sections.indicadores.description}
+    >
       <LandingShell>
         <div className="mx-auto max-w-3xl text-center">
           <Eyebrow dark tokenColor="green">
@@ -1692,7 +1704,13 @@ export function AIDemo() {
   }
 
   return (
-    <LandingSection id="ia" surface="depth" spacing="standard" withGrid>
+    <LandingSection
+      id="ia"
+      surface="depth"
+      spacing="standard"
+      withGrid
+      seoDescription={LANDING_SEO.sections.ia.description}
+    >
       <LandingShell>
         <div className="mx-auto max-w-3xl text-center">
           <Eyebrow tokenColor="yellow">Asistente IA</Eyebrow>

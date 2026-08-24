@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { SECTION_SPACING, type SectionSpacing } from '@/lib/spacing'
 import { RevealSection } from './RevealSection'
+import { LandingSectionSeo } from './LandingSeoHead'
 import { useDemoRequest } from './DemoRequestContext'
 import { StatusToken, type StatusColor } from './StatusToken'
 
@@ -43,6 +44,7 @@ export function LandingSection({
   className,
   surface = 'base',
   spacing = 'standard',
+  seoDescription,
   /** @deprecated Prefer `surface="muted"`. */
   muted = false,
   reveal = true,
@@ -53,6 +55,7 @@ export function LandingSection({
   className?: string
   surface?: LandingSurface
   spacing?: SectionSpacing
+  seoDescription?: string
   muted?: boolean
   reveal?: boolean
   withGrid?: boolean
@@ -65,6 +68,7 @@ export function LandingSection({
       id={id}
       className={cn('relative', SECTION_SPACING[spacing], SURFACE_CLASS[resolvedSurface], className)}
     >
+      {seoDescription ? <LandingSectionSeo description={seoDescription} /> : null}
       {withGrid ? (
         <div
           className="pointer-events-none absolute inset-0 opacity-40"

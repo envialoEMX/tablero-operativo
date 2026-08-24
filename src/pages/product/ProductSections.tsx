@@ -24,6 +24,8 @@ import {
 import { CountUpInteger } from './CountUpValue'
 import { PremiumCtaPanel } from './ProductVisual'
 import { StatusToken } from './StatusToken'
+import { LANDING_SEO } from './landingSeo'
+import { LandingSectionSeo } from './LandingSeoHead'
 
 function ChaosToOrderVisual() {
   const { ref, inView } = useInView(0.35)
@@ -144,7 +146,13 @@ export function ProblemSection() {
   ]
 
   return (
-    <LandingSection surface="muted" spacing="standard" withGrid>
+    <LandingSection
+      id="problema"
+      surface="muted"
+      spacing="standard"
+      withGrid
+      seoDescription={LANDING_SEO.sections.problema.description}
+    >
       <LandingShell>
         <div className="mx-auto max-w-3xl text-center">
             <Eyebrow tokenColor="red">El costo de operar a ciegas</Eyebrow>
@@ -211,7 +219,12 @@ const cultureAfter = [
 
 export function CultureShiftSection() {
   return (
-    <LandingSection surface="base" spacing="tight">
+    <LandingSection
+      id="cultura"
+      surface="base"
+      spacing="tight"
+      seoDescription={LANDING_SEO.sections.cultura.description}
+    >
       <LandingShell className="max-w-6xl">
         <div className="mx-auto max-w-3xl text-center">
           <Eyebrow tokenColor="green">Cambio cultural</Eyebrow>
@@ -294,7 +307,8 @@ export function ComparisonSection() {
 
 export function MidPageCTA() {
   return (
-    <section className="border-b border-border/60 bg-foreground py-8 text-background">
+    <section id="diagnostico" className="border-b border-border/60 bg-foreground py-8 text-background">
+      <LandingSectionSeo description={LANDING_SEO.sections.diagnostico.description} />
       <LandingShell className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
@@ -322,7 +336,13 @@ const extraCapabilities = [
 
 export function MoreCapabilitiesSection() {
   return (
-    <LandingSection surface="muted" spacing="tight" withGrid>
+    <LandingSection
+      id="capacidades"
+      surface="muted"
+      spacing="tight"
+      withGrid
+      seoDescription={LANDING_SEO.sections.capacidades.description}
+    >
       <LandingShell className="max-w-6xl">
         <div className="mx-auto max-w-3xl text-center">
           <Eyebrow tokenColor="green">Capacidades conectadas</Eyebrow>
@@ -375,7 +395,13 @@ const closeStats = [
 export function CloseSection() {
   return (
     <>
-      <LandingSection surface="inverse" spacing="standard" reveal>
+      <LandingSection
+        id="cierre"
+        surface="inverse"
+        spacing="standard"
+        reveal
+        seoDescription={LANDING_SEO.sections.cierre.description}
+      >
         <LandingShell className="max-w-6xl text-center">
           <div className="flex justify-center">
             <Eyebrow dark tokenColor="green">
