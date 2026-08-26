@@ -22,6 +22,7 @@ export const ROUTES = {
   TICKETS: '/tickets',
   CHALLENGES: '/challenges',
   CHALLENGES_DETAIL: '/challenges/:id',
+  CHALLENGE_IDEA_DETAIL: '/challenges/:challengeId/ideas/:ideaId',
   ADMIN_CHALLENGES: '/admin/challenges',
   SPRINTS: '/sprints',
   DISCIPLINA: '/disciplina',

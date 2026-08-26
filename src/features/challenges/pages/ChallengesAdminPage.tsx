@@ -33,6 +33,8 @@ import {
   useRejectChallenge,
 } from '../hooks/useChallenges'
 import type { ChallengeFilter, ChallengeListItem } from '../types'
+import { audienceSummaryLabel } from '../challengeForm.utils'
+import { CHALLENGE_IMPACT_LABEL } from '../constants'
 import {
   CHALLENGE_STATUS_BADGE,
   CHALLENGE_STATUS_LABEL,
@@ -69,6 +71,11 @@ export function ChallengesAdminPage() {
   const pending = challenges.filter((item) => item.status === 'pending').length
   const active = challenges.filter((item) => item.effective_status === 'active').length
   const finished = challenges.filter((item) => item.effective_status === 'finished').length
+  const totalIdeas = challenges.reduce((sum, item) => sum + (item.metrics.ideas ?? 0), 0)
+  const engagement = challenges.reduce(
+    (sum, item) => sum + (item.metrics.ideaVotes ?? 0) + (item.metrics.ideaComments ?? 0),
+    0
+  )
   const notifyCreator = async (challenge: ChallengeListItem, tipo: string, titulo: string, mensaje: string) => {
     if (!challenge.created_by || challenge.created_by === currentUser?.id) return
     try {
@@ -154,10 +161,12 @@ export function ChallengesAdminPage() {
         </Button>
       </header>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <AdminKpi label="Pendientes de aprobacion" value={pending} icon={<Lightbulb />} tone="amber" />
         <AdminKpi label="Activos" value={active} icon={<CheckCircle2 />} tone="emerald" />
-        <AdminKpi label="Participantes unicos" value={uniqueParticipants} icon={<ThumbsUp />} tone="blue" />
+        <AdminKpi label="Ideas propuestas" value={totalIdeas} icon={<Lightbulb />} tone="blue" />
+        <AdminKpi label="Participantes únicos" value={uniqueParticipants} icon={<ThumbsUp />} tone="emerald" />
+        <AdminKpi label="Engagement" value={engagement} icon={<Flag />} tone="slate" />
         <AdminKpi label="Finalizados" value={finished} icon={<Flag />} tone="slate" />
       </div>
 
@@ -252,7 +261,8 @@ export function ChallengesAdminPage() {
                     <th className="px-3 py-2">Challenge</th>
                     <th className="px-3 py-2">Creador</th>
                     <th className="px-3 py-2">Estado</th>
-                    <th className="px-3 py-2 text-right">Votos</th>
+                    <th className="px-3 py-2 text-right">Ideas</th>
+                    <th className="px-3 py-2 text-right">Apoyos</th>
                     <th className="px-3 py-2 text-right">Comentarios</th>
                     <th className="px-3 py-2 text-right">Participantes</th>
                     <th className="px-3 py-2">Inicio</th>
@@ -265,8 +275,29 @@ export function ChallengesAdminPage() {
                     <tr key={challenge.id} className="align-top">
                       <td className="max-w-xs px-3 py-3">
                         <p className="line-clamp-2 font-medium text-foreground">{challenge.title}</p>
-                        <p className="line-clamp-1 text-xs text-muted-foreground">
-                          {challenge.area_id ? areaNames[challenge.area_id] ?? 'Area' : 'Sin area'}
+                        <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                          {challenge.area_id ? areaNames[challenge.area_id] ?? 'Área' : 'Sin área'}
+                          {challenge.strategic_pillar ? ` · ${challenge.strategic_pillar.nombre}` : ''}
+                        </p>
+                        <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">
+                          {challenge.impacts.length > 0
+                            ? challenge.impacts
+                                .map((impact) =>
+                                  impact === 'other' && challenge.other_impact?.trim()
+                                    ? challenge.other_impact.trim()
+                                    : CHALLENGE_IMPACT_LABEL[impact]
+                                )
+                                .join(' · ')
+                            : 'Sin impacto definido'}
+                        </p>
+                        <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">
+                          Audiencia:{' '}
+                          {audienceSummaryLabel({
+                            audience_type: challenge.audience_type,
+                            audience_area_id: challenge.audience_area_id,
+                            audience_area_ids: challenge.audience_area_ids,
+                            areaNames,
+                          })}
                         </p>
                       </td>
                       <td className="px-3 py-3 text-muted-foreground">{userNames[challenge.created_by] ?? 'Usuario'}</td>
@@ -275,8 +306,9 @@ export function ChallengesAdminPage() {
                           {CHALLENGE_STATUS_LABEL[challenge.effective_status]}
                         </Badge>
                       </td>
-                      <td className="px-3 py-3 text-right tabular-nums">{challenge.metrics.votes}</td>
-                      <td className="px-3 py-3 text-right tabular-nums">{challenge.metrics.comments}</td>
+                      <td className="px-3 py-3 text-right tabular-nums">{challenge.metrics.ideas ?? 0}</td>
+                      <td className="px-3 py-3 text-right tabular-nums">{challenge.metrics.ideaVotes ?? 0}</td>
+                      <td className="px-3 py-3 text-right tabular-nums">{challenge.metrics.ideaComments ?? 0}</td>
                       <td className="px-3 py-3 text-right tabular-nums">{challenge.metrics.participants}</td>
                       <td className="px-3 py-3 text-muted-foreground">{dateLabel(challenge.start_date ?? challenge.proposed_start_date)}</td>
                       <td className="px-3 py-3 text-muted-foreground">{dateLabel(challenge.end_date ?? challenge.proposed_end_date)}</td>
@@ -324,7 +356,7 @@ export function ChallengesAdminPage() {
                   ))}
                   {challenges.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="px-3 py-12 text-center text-sm text-muted-foreground">
+                      <td colSpan={10} className="px-3 py-12 text-center text-sm text-muted-foreground">
                         Sin Challenges para los filtros seleccionados.
                       </td>
                     </tr>

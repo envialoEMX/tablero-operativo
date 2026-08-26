@@ -121,7 +121,7 @@ export function useToggleChallengeVote(currentUserId?: string | null) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ challenge }: { challenge: Challenge & { voted_by_me?: boolean } }) => {
-      if (!currentUserId) throw new Error('Inicia sesion para votar.')
+      if (!currentUserId) throw new Error('Inicia sesión para apoyar este reto.')
       if (challenge.voted_by_me) {
         await challengesService.unvote(challenge.id, currentUserId)
       } else {

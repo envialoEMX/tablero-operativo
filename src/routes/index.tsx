@@ -141,6 +141,13 @@ const router = createBrowserRouter([
             },
           },
           {
+            path: ROUTES.CHALLENGE_IDEA_DETAIL,
+            lazy: async () => {
+              const { ChallengeIdeaDetailPage } = await importWithReload(() => import('@/features/challenges'))
+              return { Component: ChallengeIdeaDetailPage }
+            },
+          },
+          {
             path: ROUTES.ADMIN_CHALLENGES,
             lazy: async () => {
               const { ChallengesAdminPage } = await importWithReload(() => import('@/features/challenges'))

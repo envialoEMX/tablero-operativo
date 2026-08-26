@@ -4,6 +4,8 @@ import {
   ArrowLeft,
   CalendarDays,
   CheckCircle2,
+  HelpCircle,
+  Lightbulb as LightbulbIcon,
   MessageSquare,
   Send,
   ThumbsUp,
@@ -13,6 +15,12 @@ import {
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { SectionCard, SectionCardBody, SectionCardHeader } from '@/components/SectionCard'
 import { ROUTES } from '@/constants'
 import { formatDateTimeCDMX } from '@/lib/dateUtils'
@@ -30,6 +38,13 @@ import {
   useUpdateChallengeComment,
 } from '../hooks/useChallenges'
 import { isChallengeOpen } from '../services/challenges.service'
+import { ChallengeAboutSection } from '../components/ChallengeAboutSection'
+import { ChallengeIdeasSection } from '../components/ChallengeIdeasSection'
+import {
+  CHALLENGE_SUPPORT_LABEL,
+  CHALLENGE_SUPPORT_LABEL_ACTIVE,
+  CHALLENGE_SUPPORT_TOOLTIP,
+} from '../constants'
 import {
   CHALLENGE_STATUS_BADGE,
   CHALLENGE_STATUS_LABEL,
@@ -72,9 +87,9 @@ export function ChallengeDetailPage() {
     if (!challenge) return
     try {
       await toggleVote.mutateAsync({ challenge })
-      toast.success(challenge.voted_by_me ? 'Voto retirado' : 'Gracias por apoyar este Challenge')
+      toast.success(challenge.voted_by_me ? 'Apoyo retirado' : 'Gracias por considerar importante este reto')
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'No se pudo actualizar tu voto')
+      toast.error(err instanceof Error ? err.message : 'No se pudo actualizar tu apoyo')
     }
   }
 
@@ -180,9 +195,10 @@ export function ChallengeDetailPage() {
               </span>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-2 sm:min-w-80">
-            <Counter icon={<ThumbsUp />} value={challenge.metrics.votes} label="Votos" />
-            <Counter icon={<MessageSquare />} value={challenge.metrics.comments} label="Comentarios" />
+          <div className="grid grid-cols-2 gap-2 sm:min-w-[28rem] sm:grid-cols-4">
+            <Counter icon={<LightbulbIcon />} value={challenge.metrics.ideas ?? 0} label="Ideas" />
+            <Counter icon={<ThumbsUp />} value={challenge.metrics.ideaVotes ?? 0} label="Apoyos" />
+            <Counter icon={<MessageSquare />} value={challenge.metrics.ideaComments ?? 0} label="Comentarios" />
             <Counter icon={<Users />} value={challenge.metrics.participants} label="Participantes" />
           </div>
         </div>
@@ -198,23 +214,68 @@ export function ChallengeDetailPage() {
                 : CHALLENGE_STATUS_LABEL[challenge.effective_status]}
             </p>
           </div>
-          <Button
-            type="button"
-            disabled={!openForParticipation || toggleVote.isPending}
-            variant={challenge.voted_by_me ? 'secondary' : 'default'}
-            onClick={() => void handleVote()}
-            className="h-12 gap-2"
-          >
-            <ThumbsUp className="h-4 w-4" aria-hidden />
-            {challenge.voted_by_me ? 'Retirar voto' : 'Apoyar'}
-          </Button>
+          <TooltipProvider>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                disabled={!openForParticipation || toggleVote.isPending}
+                variant={challenge.voted_by_me ? 'secondary' : 'default'}
+                onClick={() => void handleVote()}
+                className="h-12 flex-1 gap-2"
+              >
+                <ThumbsUp className="h-4 w-4" aria-hidden />
+                {challenge.voted_by_me ? CHALLENGE_SUPPORT_LABEL_ACTIVE : CHALLENGE_SUPPORT_LABEL}
+              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button type="button" variant="ghost" size="icon" className="h-12 w-12 shrink-0">
+                    <HelpCircle className="h-4 w-4 text-muted-foreground" aria-hidden />
+                    <span className="sr-only">Qué significa apoyar</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs text-left leading-relaxed">
+                  {CHALLENGE_SUPPORT_TOOLTIP}
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
         </div>
       </section>
 
+      <ChallengeAboutSection
+        challenge={challenge}
+        areaName={challenge.area_id ? areaNames[challenge.area_id] : null}
+      />
+
+      <ChallengeIdeasSection
+        challenge={challenge}
+        currentUser={currentUser}
+        userNames={userNames}
+        openForParticipation={openForParticipation}
+      />
+
       <SectionCard>
-        <SectionCardHeader title="Descripcion" icon={CalendarDays} />
-        <SectionCardBody>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{challenge.description}</p>
+        <SectionCardHeader title="Descripción" icon={CalendarDays} />
+        <SectionCardBody className="space-y-4">
+          {challenge.context?.trim() ? (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Contexto</p>
+              <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                {challenge.context.trim()}
+              </p>
+            </div>
+          ) : null}
+          {challenge.question?.trim() ? (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Pregunta</p>
+              <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                {challenge.question.trim()}
+              </p>
+            </div>
+          ) : null}
+          {!challenge.context?.trim() && !challenge.question?.trim() ? (
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{challenge.description}</p>
+          ) : null}
         </SectionCardBody>
       </SectionCard>
 
@@ -227,10 +288,11 @@ export function ChallengeDetailPage() {
           />
           <SectionCardBody className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-4">
-              <ResultMetric label="Votos" value={challenge.metrics.votes} />
-              <ResultMetric label="Comentarios" value={challenge.metrics.comments} />
+              <ResultMetric label="Ideas" value={challenge.metrics.ideas ?? 0} />
+              <ResultMetric label="Apoyos a ideas" value={challenge.metrics.ideaVotes ?? 0} />
+              <ResultMetric label="Comentarios en ideas" value={challenge.metrics.ideaComments ?? 0} />
               <ResultMetric label="Participantes" value={challenge.metrics.participants} />
-              <ResultMetric label="Duracion" value={duration ? `${duration} dias` : 'Sin definir'} />
+              <ResultMetric label="Duración" value={duration ? `${duration} días` : 'Sin definir'} />
             </div>
             <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -246,8 +308,8 @@ export function ChallengeDetailPage() {
 
       <SectionCard>
         <SectionCardHeader
-          title="Conversacion"
-          subtitle={openForParticipation ? 'Comparte contexto, riesgos o propuestas.' : 'La participacion ya esta cerrada.'}
+          title="Conversación general"
+          subtitle="Espacio histórico del Challenge. Las soluciones deben capturarse como ideas."
           icon={MessageSquare}
           action={<Badge variant="secondary">{comments.length}</Badge>}
         />
